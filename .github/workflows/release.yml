@@ -1,0 +1,84 @@
+name: Create release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: SemVer release version without the v prefix (for example, 0.1.0)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out release source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Validate version
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          semver='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
+          if [[ ! "${RELEASE_VERSION}" =~ ${semver} ]]; then
+            echo "Version must be valid SemVer without a leading v." >&2
+            exit 1
+          fi
+          expected="addon.version = '${RELEASE_VERSION}';"
+          if ! grep -Fqx "${expected}" addon/vanahub-test-addon/vanahub-test-addon.lua; then
+            echo "Requested version does not match addon.version in the Lua entrypoint." >&2
+            exit 1
+          fi
+
+      - name: Build and verify package
+        id: package
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          make package VERSION="${RELEASE_VERSION}"
+
+          archive="dist/vanahub-test-addon-${RELEASE_VERSION}.zip"
+          expected_entry='vanahub-test-addon/vanahub-test-addon.lua'
+          mapfile -t files < <(zipinfo -1 "${archive}" | sed '/\/$/d')
+          if [[ ${#files[@]} -ne 1 || "${files[0]}" != "${expected_entry}" ]]; then
+            echo "Release archive does not have the expected addon structure." >&2
+            zipinfo -1 "${archive}" >&2
+            exit 1
+          fi
+
+          digest="$(sha256sum "${archive}" | cut -d' ' -f1)"
+          size="$(stat -c '%s' "${archive}")"
+          printf '%s  %s\n' "${digest}" "$(basename "${archive}")" > dist/SHA256SUMS.txt
+
+          echo "archive=${archive}" >> "${GITHUB_OUTPUT}"
+          echo "digest=${digest}" >> "${GITHUB_OUTPUT}"
+          echo "size=${size}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          ARCHIVE: ${{ steps.package.outputs.archive }}
+          SHA256: ${{ steps.package.outputs.digest }}
+          COMPRESSED_SIZE: ${{ steps.package.outputs.size }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "v${RELEASE_VERSION}" \
+            "${ARCHIVE}#Ashita v4 addon package" \
+            'dist/SHA256SUMS.txt#SHA-256 checksums' \
+            --target "${GITHUB_SHA}" \
+            --title "VanaHub Test Addon v${RELEASE_VERSION}" \
+            --generate-notes \
+            --notes "Catalog metadata: SHA-256 \`${SHA256}\`; compressed size \`${COMPRESSED_SIZE}\` bytes."
