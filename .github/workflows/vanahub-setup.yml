@@ -1,0 +1,15 @@
+name: Set up VanaHub publishing
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  setup:
+    uses: Hildaware/vanahub-publisher/.github/workflows/setup-addon.yml@abed3e5c7ba9b84a7b9bcff05b40d95565a0ae0b
+    with:
+      setup: ewogICJjb25maWciOiB7CiAgICAiYXV0aG9yIjogIlNlbCIsCiAgICAiZGVjbGFyZWRDYXBhYmlsaXRpZXMiOiBbCiAgICAgICJjaGF0LW91dHB1dCIKICAgIF0sCiAgICAiZGVzY3JpcHRpb24iOiAiSXQncyBhbiBhZGRvbiIsCiAgICAiaWQiOiAidmFuYWh1Yi10ZXN0LWFkZG9uIiwKICAgICJuYW1lIjogIlZhbmFodWIgVGVzdCBBZGRvbiIsCiAgICAic2NoZW1hVmVyc2lvbiI6IDEsCiAgICAic291cmNlUGF0aCI6ICJhZGRvbi92YW5haHViLXRlc3QtYWRkb24iCiAgfSwKICAibWFpbnRhaW5lcnMiOiBbCiAgICAiYmZlcnJhcmkzNTIiCiAgXSwKICAicHVibGlzaGVyUmVmIjogImFiZWQzZTVjN2JhOWI4NGE3YjliY2ZmMDViNDBkOTU1NjVhMGFlMGIiLAogICJyZXBvc2l0b3J5IjogIkhpbGRhd2FyZS92YW5haHViLXRlc3QtYWRkb24iCn0K
+      publisher-ref: abed3e5c7ba9b84a7b9bcff05b40d95565a0ae0b
