@@ -1,0 +1,11 @@
+{
+  "author": "Sel",
+  "declaredCapabilities": [
+    "chat-output"
+  ],
+  "description": "It's a test addon.",
+  "id": "vanahub-test-addon",
+  "name": "Vanahub Test Addon",
+  "schemaVersion": 1,
+  "sourcePath": "addon/vanahub-test-addon"
+}
