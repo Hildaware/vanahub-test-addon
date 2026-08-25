@@ -1,7 +1,9 @@
-name: Set up VanaHub publishing
+name: VanaHub publishing
 
 on:
   workflow_dispatch:
+  release:
+    types: [published]
 
 permissions:
   contents: write
@@ -9,7 +11,31 @@ permissions:
 
 jobs:
   setup:
-    uses: Hildaware/vanahub-publisher/.github/workflows/setup-addon.yml@abed3e5c7ba9b84a7b9bcff05b40d95565a0ae0b
+    if: github.event_name == 'workflow_dispatch'
+    uses: Hildaware/vanahub-publisher/.github/workflows/setup-addon.yml@4ead3da286597a255eb0afc44403a610cc471ba6
     with:
-      setup: ewogICJjb25maWciOiB7CiAgICAiYXV0aG9yIjogIlNlbCIsCiAgICAiZGVjbGFyZWRDYXBhYmlsaXRpZXMiOiBbCiAgICAgICJjaGF0LW91dHB1dCIKICAgIF0sCiAgICAiZGVzY3JpcHRpb24iOiAiSXQncyBhbiBhZGRvbiIsCiAgICAiaWQiOiAidmFuYWh1Yi10ZXN0LWFkZG9uIiwKICAgICJuYW1lIjogIlZhbmFodWIgVGVzdCBBZGRvbiIsCiAgICAic2NoZW1hVmVyc2lvbiI6IDEsCiAgICAic291cmNlUGF0aCI6ICJhZGRvbi92YW5haHViLXRlc3QtYWRkb24iCiAgfSwKICAibWFpbnRhaW5lcnMiOiBbCiAgICAiYmZlcnJhcmkzNTIiCiAgXSwKICAicHVibGlzaGVyUmVmIjogImFiZWQzZTVjN2JhOWI4NGE3YjliY2ZmMDViNDBkOTU1NjVhMGFlMGIiLAogICJyZXBvc2l0b3J5IjogIkhpbGRhd2FyZS92YW5haHViLXRlc3QtYWRkb24iCn0K
-      publisher-ref: abed3e5c7ba9b84a7b9bcff05b40d95565a0ae0b
+      setup: ewogICJjb25maWciOiB7CiAgICAiYXV0aG9yIjogIlNlbCIsCiAgICAiZGVjbGFyZWRDYXBhYmlsaXRpZXMiOiBbCiAgICAgICJjaGF0LW91dHB1dCIKICAgIF0sCiAgICAiZGVzY3JpcHRpb24iOiAiSXQncyBhIHRlc3QgYWRkb24uIiwKICAgICJpZCI6ICJ2YW5haHViLXRlc3QtYWRkb24iLAogICAgIm5hbWUiOiAiVmFuYWh1YiBUZXN0IEFkZG9uIiwKICAgICJzY2hlbWFWZXJzaW9uIjogMSwKICAgICJzb3VyY2VQYXRoIjogImFkZG9uL3ZhbmFodWItdGVzdC1hZGRvbiIKICB9LAogICJtYWludGFpbmVycyI6IFsKICAgICJiZmVycmFyaTM1MiIKICBdLAogICJwdWJsaXNoZXJSZWYiOiAiNGVhZDNkYTI4NjU5N2EyNTVlYjBhZmM0NDQwM2E2MTBjYzQ3MWJhNiIsCiAgInJlcG9zaXRvcnkiOiAiSGlsZGF3YXJlL3ZhbmFodWItdGVzdC1hZGRvbiIKfQo=
+      publisher-ref: 4ead3da286597a255eb0afc44403a610cc471ba6
+  publish:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.release.tag_name }}
+      - id: package
+        uses: Hildaware/vanahub-publisher@4ead3da286597a255eb0afc44403a610cc471ba6
+      - name: Attach VanaHub assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VH_TAG: ${{ github.event.release.tag_name }}
+          VH_OUTPUT: ${{ steps.package.outputs.output-directory }}
+        run: gh release upload "$VH_TAG" "$VH_OUTPUT"/* --clobber
+      - name: Catalog submission
+        env:
+          VH_ID: ${{ steps.package.outputs.package-id }}
+          VH_REPOSITORY: ${{ github.repository }}
+        run: |
+          url="https://github.com/Hildaware/vanahub-catalog/issues/new?template=vanahub-submission.yml&repository=https%3A%2F%2Fgithub.com%2F${VH_REPOSITORY}&package_id=${VH_ID}"
+          echo "### Catalog" >> "$GITHUB_STEP_SUMMARY"
+          echo "For first admission, [submit this release to VanaHub](${url}). Later releases are discovered automatically." >> "$GITHUB_STEP_SUMMARY"
