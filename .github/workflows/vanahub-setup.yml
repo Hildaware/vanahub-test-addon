@@ -23,10 +23,10 @@ permissions:
 jobs:
   setup:
     if: github.event_name == 'workflow_dispatch' && inputs.release-tag == ''
-    uses: Hildaware/vanahub-publisher/.github/workflows/setup-addon.yml@551e48fbefe867c56b077dabef53d9b80a362c8e
+    uses: Hildaware/vanahub-publisher/.github/workflows/setup-addon.yml@e37bc758db5c081e6e87a660e713eb5ced62a173
     with:
-      setup: ewogICJjb25maWciOiB7CiAgICAiYXV0aG9yIjogIlNlbCIsCiAgICAiZGVjbGFyZWRDYXBhYmlsaXRpZXMiOiBbCiAgICAgICJjaGF0LW91dHB1dCIKICAgIF0sCiAgICAiZGVzY3JpcHRpb24iOiAiSXQncyBhIHRlc3QgYWRkb24uIiwKICAgICJpZCI6ICJ2YW5haHViLXRlc3QtYWRkb24iLAogICAgIm5hbWUiOiAiVmFuYWh1YiBUZXN0IEFkZG9uIiwKICAgICJzY2hlbWFWZXJzaW9uIjogMSwKICAgICJzb3VyY2VQYXRoIjogImFkZG9uL3ZhbmFodWItdGVzdC1hZGRvbiIKICB9LAogICJtYWludGFpbmVycyI6IFsKICAgICJiZmVycmFyaTM1MiIsCiAgICAiSGlsZGF3YXJlIgogIF0sCiAgInB1Ymxpc2hlclJlZiI6ICI1NTFlNDhmYmVmZTg2N2M1NmIwNzdkYWJlZjUzZDliODBhMzYyYzhlIiwKICAicmVwb3NpdG9yeSI6ICJIaWxkYXdhcmUvdmFuYWh1Yi10ZXN0LWFkZG9uIgp9Cg==
-      publisher-ref: 551e48fbefe867c56b077dabef53d9b80a362c8e
+      setup: ewogICJjb25maWciOiB7CiAgICAiYXV0aG9yIjogIlNlbCIsCiAgICAiZGVjbGFyZWRDYXBhYmlsaXRpZXMiOiBbCiAgICAgICJjaGF0LW91dHB1dCIKICAgIF0sCiAgICAiZGVzY3JpcHRpb24iOiAiSXQncyBhIHRlc3QgYWRkb24uIiwKICAgICJpZCI6ICJ2YW5haHViLXRlc3QtYWRkb24iLAogICAgIm5hbWUiOiAiVmFuYWh1YiBUZXN0IEFkZG9uIiwKICAgICJzY2hlbWFWZXJzaW9uIjogMSwKICAgICJzb3VyY2VQYXRoIjogImFkZG9uL3ZhbmFodWItdGVzdC1hZGRvbiIKICB9LAogICJtYWludGFpbmVycyI6IFsKICAgICJiZmVycmFyaTM1MiIsCiAgICAiSGlsZGF3YXJlIgogIF0sCiAgInB1Ymxpc2hlclJlZiI6ICJlMzdiYzc1OGRiNWMwODFlNmU4N2E2NjBlNzEzZWI1Y2VkNjJhMTczIiwKICAicmVwb3NpdG9yeSI6ICJIaWxkYXdhcmUvdmFuYWh1Yi10ZXN0LWFkZG9uIgp9Cg==
+      publisher-ref: e37bc758db5c081e6e87a660e713eb5ced62a173
   publish:
     if: github.event_name == 'release' || inputs.release-tag != ''
     runs-on: ubuntu-latest
@@ -35,7 +35,7 @@ jobs:
         with:
           ref: ${{ inputs.release-tag || github.event.release.tag_name }}
       - id: package
-        uses: Hildaware/vanahub-publisher@551e48fbefe867c56b077dabef53d9b80a362c8e
+        uses: Hildaware/vanahub-publisher@e37bc758db5c081e6e87a660e713eb5ced62a173
         with:
           release-tag: ${{ inputs.release-tag || github.event.release.tag_name }}
           github-token: ${{ github.token }}
