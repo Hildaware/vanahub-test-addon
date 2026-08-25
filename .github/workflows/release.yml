@@ -82,3 +82,11 @@ jobs:
             --title "VanaHub Test Addon v${RELEASE_VERSION}" \
             --generate-notes \
             --notes "Catalog metadata: SHA-256 \`${SHA256}\`; compressed size \`${COMPRESSED_SIZE}\` bytes."
+
+  vanahub:
+    needs: release
+    uses: ./.github/workflows/vanahub-setup.yml
+    with:
+      release-tag: v${{ inputs.version }}
+    permissions:
+      contents: write

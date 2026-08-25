@@ -2,6 +2,17 @@ name: VanaHub publishing
 
 on:
   workflow_dispatch:
+    inputs:
+      release-tag:
+        description: Published release tag to package. Leave blank to run repository setup.
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      release-tag:
+        description: Published release tag to package.
+        required: true
+        type: string
   release:
     types: [published]
 
@@ -11,24 +22,27 @@ permissions:
 
 jobs:
   setup:
-    if: github.event_name == 'workflow_dispatch'
-    uses: Hildaware/vanahub-publisher/.github/workflows/setup-addon.yml@4ead3da286597a255eb0afc44403a610cc471ba6
+    if: github.event_name == 'workflow_dispatch' && inputs.release-tag == ''
+    uses: Hildaware/vanahub-publisher/.github/workflows/setup-addon.yml@551e48fbefe867c56b077dabef53d9b80a362c8e
     with:
-      setup: ewogICJjb25maWciOiB7CiAgICAiYXV0aG9yIjogIlNlbCIsCiAgICAiZGVjbGFyZWRDYXBhYmlsaXRpZXMiOiBbCiAgICAgICJjaGF0LW91dHB1dCIKICAgIF0sCiAgICAiZGVzY3JpcHRpb24iOiAiSXQncyBhIHRlc3QgYWRkb24uIiwKICAgICJpZCI6ICJ2YW5haHViLXRlc3QtYWRkb24iLAogICAgIm5hbWUiOiAiVmFuYWh1YiBUZXN0IEFkZG9uIiwKICAgICJzY2hlbWFWZXJzaW9uIjogMSwKICAgICJzb3VyY2VQYXRoIjogImFkZG9uL3ZhbmFodWItdGVzdC1hZGRvbiIKICB9LAogICJtYWludGFpbmVycyI6IFsKICAgICJiZmVycmFyaTM1MiIKICBdLAogICJwdWJsaXNoZXJSZWYiOiAiNGVhZDNkYTI4NjU5N2EyNTVlYjBhZmM0NDQwM2E2MTBjYzQ3MWJhNiIsCiAgInJlcG9zaXRvcnkiOiAiSGlsZGF3YXJlL3ZhbmFodWItdGVzdC1hZGRvbiIKfQo=
-      publisher-ref: 4ead3da286597a255eb0afc44403a610cc471ba6
+      setup: ewogICJjb25maWciOiB7CiAgICAiYXV0aG9yIjogIlNlbCIsCiAgICAiZGVjbGFyZWRDYXBhYmlsaXRpZXMiOiBbCiAgICAgICJjaGF0LW91dHB1dCIKICAgIF0sCiAgICAiZGVzY3JpcHRpb24iOiAiSXQncyBhIHRlc3QgYWRkb24uIiwKICAgICJpZCI6ICJ2YW5haHViLXRlc3QtYWRkb24iLAogICAgIm5hbWUiOiAiVmFuYWh1YiBUZXN0IEFkZG9uIiwKICAgICJzY2hlbWFWZXJzaW9uIjogMSwKICAgICJzb3VyY2VQYXRoIjogImFkZG9uL3ZhbmFodWItdGVzdC1hZGRvbiIKICB9LAogICJtYWludGFpbmVycyI6IFsKICAgICJiZmVycmFyaTM1MiIsCiAgICAiSGlsZGF3YXJlIgogIF0sCiAgInB1Ymxpc2hlclJlZiI6ICI1NTFlNDhmYmVmZTg2N2M1NmIwNzdkYWJlZjUzZDliODBhMzYyYzhlIiwKICAicmVwb3NpdG9yeSI6ICJIaWxkYXdhcmUvdmFuYWh1Yi10ZXN0LWFkZG9uIgp9Cg==
+      publisher-ref: 551e48fbefe867c56b077dabef53d9b80a362c8e
   publish:
-    if: github.event_name == 'release'
+    if: github.event_name == 'release' || inputs.release-tag != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ inputs.release-tag || github.event.release.tag_name }}
       - id: package
-        uses: Hildaware/vanahub-publisher@4ead3da286597a255eb0afc44403a610cc471ba6
+        uses: Hildaware/vanahub-publisher@551e48fbefe867c56b077dabef53d9b80a362c8e
+        with:
+          release-tag: ${{ inputs.release-tag || github.event.release.tag_name }}
+          github-token: ${{ github.token }}
       - name: Attach VanaHub assets
         env:
           GH_TOKEN: ${{ github.token }}
-          VH_TAG: ${{ github.event.release.tag_name }}
+          VH_TAG: ${{ inputs.release-tag || github.event.release.tag_name }}
           VH_OUTPUT: ${{ steps.package.outputs.output-directory }}
         run: gh release upload "$VH_TAG" "$VH_OUTPUT"/* --clobber
       - name: Catalog submission
