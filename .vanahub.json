@@ -3,7 +3,8 @@
   "packages": {
     "vanahub-test-addon": {
       "maintainers": [
-        "bferrari352"
+        "bferrari352",
+        "Hildaware"
       ]
     }
   }
