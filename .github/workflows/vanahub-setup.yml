@@ -16,29 +16,38 @@ on:
   release:
     types: [published]
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   setup:
     if: github.event_name == 'workflow_dispatch' && inputs.release-tag == ''
-    uses: Hildaware/vanahub-publisher/.github/workflows/setup-addon.yml@e37bc758db5c081e6e87a660e713eb5ced62a173
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: Hildaware/vanahub-publisher/.github/workflows/setup-addon.yml@c4fe074841880bf8ab21191e7fc93c4bf4aec508
     with:
-      setup: ewogICJjb25maWciOiB7CiAgICAiYXV0aG9yIjogIlNlbCIsCiAgICAiZGVjbGFyZWRDYXBhYmlsaXRpZXMiOiBbCiAgICAgICJjaGF0LW91dHB1dCIKICAgIF0sCiAgICAiZGVzY3JpcHRpb24iOiAiSXQncyBhIHRlc3QgYWRkb24uIiwKICAgICJpZCI6ICJ2YW5haHViLXRlc3QtYWRkb24iLAogICAgIm5hbWUiOiAiVmFuYWh1YiBUZXN0IEFkZG9uIiwKICAgICJzY2hlbWFWZXJzaW9uIjogMSwKICAgICJzb3VyY2VQYXRoIjogImFkZG9uL3ZhbmFodWItdGVzdC1hZGRvbiIKICB9LAogICJtYWludGFpbmVycyI6IFsKICAgICJiZmVycmFyaTM1MiIsCiAgICAiSGlsZGF3YXJlIgogIF0sCiAgInB1Ymxpc2hlclJlZiI6ICJlMzdiYzc1OGRiNWMwODFlNmU4N2E2NjBlNzEzZWI1Y2VkNjJhMTczIiwKICAicmVwb3NpdG9yeSI6ICJIaWxkYXdhcmUvdmFuYWh1Yi10ZXN0LWFkZG9uIgp9Cg==
-      publisher-ref: e37bc758db5c081e6e87a660e713eb5ced62a173
+      setup: ewogICJjb25maWciOiB7CiAgICAiYXV0aG9yIjogIlNlbCIsCiAgICAiY2F0ZWdvcmllcyI6IFsKICAgICAgImNoYXQtY29tbXVuaWNhdGlvbiIKICAgIF0sCiAgICAiZGVzY3JpcHRpb24iOiAiSXQgZG9lcyBzdHVmZiIsCiAgICAiaWNvblVybCI6ICJodHRwczovL3ZhbmFodWItc2NyZWVuc2hvdC11cGxvYWQuaGlsZGF3YXJlLndvcmtlcnMuZGV2L3BlbmRpbmcvZDNjZmNjMDgtODhjMC00YWRkLTk5OWUtNDYzNWY0ZThjN2Q4LnBuZyIsCiAgICAiaWQiOiAidmFuYWh1Yi10ZXN0LWFkZG9uIiwKICAgICJuYW1lIjogIlRlc3QgQWRkb24iLAogICAgInNjaGVtYVZlcnNpb24iOiAxLAogICAgInNjcmVlbnNob3RzIjogWwogICAgICAiaHR0cHM6Ly92YW5haHViLXNjcmVlbnNob3QtdXBsb2FkLmhpbGRhd2FyZS53b3JrZXJzLmRldi9wZW5kaW5nLzZhYjY4ZjAxLWZiNjMtNGRlZi04NjE3LTlmMzQxZmU3YmZkYy5wbmciCiAgICBdLAogICAgInNvdXJjZVBhdGgiOiAiYWRkb24vdmFuYWh1Yi10ZXN0LWFkZG9uIgogIH0sCiAgIm1haW50YWluZXJzIjogWwogICAgImJmZXJyYXJpMzUyIiwKICAgICJoaWxkYXdhcmUiCiAgXSwKICAicHVibGlzaGVyUmVmIjogImM0ZmUwNzQ4NDE4ODBiZjhhYjIxMTkxZTdmYzkzYzRiZjRhZWM1MDgiLAogICJyZXBvc2l0b3J5IjogIkhpbGRhd2FyZS92YW5haHViLXRlc3QtYWRkb24iCn0K
+      publisher-ref: c4fe074841880bf8ab21191e7fc93c4bf4aec508
   publish:
     if: github.event_name == 'release' || inputs.release-tag != ''
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ inputs.release-tag || github.event.release.tag_name }}
+          persist-credentials: false
+      - name: Resolve published release metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VH_TAG: ${{ inputs.release-tag || github.event.release.tag_name }}
+        run: gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${VH_TAG}" > "${RUNNER_TEMP}/vanahub-release.json"
       - id: package
-        uses: Hildaware/vanahub-publisher@e37bc758db5c081e6e87a660e713eb5ced62a173
+        uses: Hildaware/vanahub-publisher@c4fe074841880bf8ab21191e7fc93c4bf4aec508
         with:
           release-tag: ${{ inputs.release-tag || github.event.release.tag_name }}
-          github-token: ${{ github.token }}
+          release-metadata-path: ${{ runner.temp }}/vanahub-release.json
       - name: Attach VanaHub assets
         env:
           GH_TOKEN: ${{ github.token }}
