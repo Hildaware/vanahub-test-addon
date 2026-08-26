@@ -24,10 +24,10 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: Hildaware/vanahub-publisher/.github/workflows/setup-addon.yml@c4fe074841880bf8ab21191e7fc93c4bf4aec508
+    uses: Hildaware/vanahub-publisher/.github/workflows/setup-addon.yml@a77f6aceb27dc4b1d8d7652db042e0bd9a507e1c
     with:
       setup: ewogICJjb25maWciOiB7CiAgICAiYXV0aG9yIjogIlNlbCIsCiAgICAiY2F0ZWdvcmllcyI6IFsKICAgICAgImNoYXQtY29tbXVuaWNhdGlvbiIKICAgIF0sCiAgICAiZGVzY3JpcHRpb24iOiAiSXQgZG9lcyBzdHVmZiIsCiAgICAiaWNvblVybCI6ICJodHRwczovL3ZhbmFodWItc2NyZWVuc2hvdC11cGxvYWQuaGlsZGF3YXJlLndvcmtlcnMuZGV2L3BlbmRpbmcvZDNjZmNjMDgtODhjMC00YWRkLTk5OWUtNDYzNWY0ZThjN2Q4LnBuZyIsCiAgICAiaWQiOiAidmFuYWh1Yi10ZXN0LWFkZG9uIiwKICAgICJuYW1lIjogIlRlc3QgQWRkb24iLAogICAgInNjaGVtYVZlcnNpb24iOiAxLAogICAgInNjcmVlbnNob3RzIjogWwogICAgICAiaHR0cHM6Ly92YW5haHViLXNjcmVlbnNob3QtdXBsb2FkLmhpbGRhd2FyZS53b3JrZXJzLmRldi9wZW5kaW5nLzZhYjY4ZjAxLWZiNjMtNGRlZi04NjE3LTlmMzQxZmU3YmZkYy5wbmciCiAgICBdLAogICAgInNvdXJjZVBhdGgiOiAiYWRkb24vdmFuYWh1Yi10ZXN0LWFkZG9uIgogIH0sCiAgIm1haW50YWluZXJzIjogWwogICAgImJmZXJyYXJpMzUyIiwKICAgICJoaWxkYXdhcmUiCiAgXSwKICAicHVibGlzaGVyUmVmIjogImM0ZmUwNzQ4NDE4ODBiZjhhYjIxMTkxZTdmYzkzYzRiZjRhZWM1MDgiLAogICJyZXBvc2l0b3J5IjogIkhpbGRhd2FyZS92YW5haHViLXRlc3QtYWRkb24iCn0K
-      publisher-ref: c4fe074841880bf8ab21191e7fc93c4bf4aec508
+      publisher-ref: a77f6aceb27dc4b1d8d7652db042e0bd9a507e1c
   publish:
     if: github.event_name == 'release' || inputs.release-tag != ''
     permissions:
@@ -44,7 +44,7 @@ jobs:
           VH_TAG: ${{ inputs.release-tag || github.event.release.tag_name }}
         run: gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${VH_TAG}" > "${RUNNER_TEMP}/vanahub-release.json"
       - id: package
-        uses: Hildaware/vanahub-publisher@c4fe074841880bf8ab21191e7fc93c4bf4aec508
+        uses: Hildaware/vanahub-publisher@a77f6aceb27dc4b1d8d7652db042e0bd9a507e1c
         with:
           release-tag: ${{ inputs.release-tag || github.event.release.tag_name }}
           release-metadata-path: ${{ runner.temp }}/vanahub-release.json
