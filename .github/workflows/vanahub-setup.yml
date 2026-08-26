@@ -1,0 +1,66 @@
+name: VanaHub publishing
+
+on:
+  workflow_dispatch:
+    inputs:
+      release-tag:
+        description: Published release tag to package. Leave blank to run repository setup.
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      release-tag:
+        description: Published release tag to package.
+        required: true
+        type: string
+  release:
+    types: [published]
+
+permissions: {}
+
+jobs:
+  setup:
+    if: github.event_name == 'workflow_dispatch' && inputs.release-tag == ''
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: Hildaware/vanahub-publisher/.github/workflows/setup-addon.yml@96e5b5e79ecac882fff54763025697b13de32dc6
+    with:
+      setup: ewogICJjb25maWciOiB7CiAgICAiYXV0aG9yIjogIlNlbCIsCiAgICAiY2F0ZWdvcmllcyI6IFsKICAgICAgImNoYXQtY29tbXVuaWNhdGlvbiIKICAgIF0sCiAgICAiZGVzY3JpcHRpb24iOiAiU3R1ZmYgaGFwcGVucyEiLAogICAgImljb25VcmwiOiAiaHR0cHM6Ly92YW5haHViLXNjcmVlbnNob3QtdXBsb2FkLmhpbGRhd2FyZS53b3JrZXJzLmRldi9wZW5kaW5nLzEyZWY1N2FiLTVkZDAtNDcxNS05MDUwLTk4ZDgxZGM4NTRlMC8xODdjMmU2ODMxNTY5ZmI4OTRiMzhhMGUyOTU4MTkwNDlhNjI4NGJlY2JlOGI0YmEyNzc3NDQyM2NmNWYyNWY2LnBuZyIsCiAgICAiaWQiOiAidmFuYWh1Yi10ZXN0LWFkZG9uIiwKICAgICJuYW1lIjogIlZhbmFodWIgVGVzdCBBZGRvbiIsCiAgICAic2NoZW1hVmVyc2lvbiI6IDEsCiAgICAic2NyZWVuc2hvdHMiOiBbCiAgICAgICJodHRwczovL3ZhbmFodWItc2NyZWVuc2hvdC11cGxvYWQuaGlsZGF3YXJlLndvcmtlcnMuZGV2L3BlbmRpbmcvNTYzNzQ5YTAtYmIzNi00ZTZjLTk1YTktNjgwOTEwZmQyMDgyL2E4ODY4ZGQ3NjUxYjVlYTdmZWU2NDNhZjEzODBhZGM2MGI4MDM3ZGI1N2MzYzYzOWZlODFjYzNjMzBlM2Y3YWMucG5nIgogICAgXSwKICAgICJzb3VyY2VQYXRoIjogImFkZG9uL3ZhbmFodWItdGVzdC1hZGRvbiIKICB9LAogICJtYWludGFpbmVycyI6IFsKICAgICJiZmVycmFyaTM1MiIsCiAgICAiaGlsZGF3YXJlIgogIF0sCiAgInB1Ymxpc2hlclJlZiI6ICI5NmU1YjVlNzllY2FjODgyZmZmNTQ3NjMwMjU2OTdiMTNkZTMyZGM2IiwKICAicmVwb3NpdG9yeSI6ICJIaWxkYXdhcmUvdmFuYWh1Yi10ZXN0LWFkZG9uIgp9Cg==
+      publisher-ref: 96e5b5e79ecac882fff54763025697b13de32dc6
+  publish:
+    if: github.event_name == 'release' || inputs.release-tag != ''
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ inputs.release-tag || github.event.release.tag_name }}
+          persist-credentials: false
+      - name: Resolve published release metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VH_TAG: ${{ inputs.release-tag || github.event.release.tag_name }}
+        run: gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${VH_TAG}" > "${RUNNER_TEMP}/vanahub-release.json"
+      - id: package
+        uses: Hildaware/vanahub-publisher@96e5b5e79ecac882fff54763025697b13de32dc6
+        with:
+          release-tag: ${{ inputs.release-tag || github.event.release.tag_name }}
+          release-metadata-path: ${{ runner.temp }}/vanahub-release.json
+      - name: Attach VanaHub assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VH_TAG: ${{ inputs.release-tag || github.event.release.tag_name }}
+          VH_OUTPUT: ${{ steps.package.outputs.output-directory }}
+        run: gh release upload "$VH_TAG" "$VH_OUTPUT"/* --clobber
+      - name: Catalog submission
+        env:
+          VH_ID: ${{ steps.package.outputs.package-id }}
+          VH_REPOSITORY: ${{ github.repository }}
+        run: |
+          url="https://github.com/Hildaware/vanahub-catalog/issues/new?template=vanahub-submission.yml&repository=https%3A%2F%2Fgithub.com%2F${VH_REPOSITORY}&package_id=${VH_ID}"
+          update_url="https://github.com/Hildaware/vanahub-catalog/issues/new?template=vanahub-update.yml&repository=https%3A%2F%2Fgithub.com%2F${VH_REPOSITORY}&package_id=${VH_ID}"
+          echo "### Catalog" >> "$GITHUB_STEP_SUMMARY"
+          echo "For first admission, [submit this release to VanaHub](${url}). Later releases are discovered automatically." >> "$GITHUB_STEP_SUMMARY"
+          echo "Already registered and don't want to wait for polling? [Request an immediate update check](${update_url})." >> "$GITHUB_STEP_SUMMARY"
