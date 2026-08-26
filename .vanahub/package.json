@@ -1,0 +1,15 @@
+{
+  "author": "Sel",
+  "categories": [
+    "chat-communication"
+  ],
+  "description": "Stuff happens!",
+  "iconUrl": "https://vanahub-screenshot-upload.hildaware.workers.dev/pending/12ef57ab-5dd0-4715-9050-98d81dc854e0/187c2e6831569fb894b38a0e295819049a6284becbe8b4ba27774423cf5f25f6.png",
+  "id": "vanahub-test-addon",
+  "name": "Vanahub Test Addon",
+  "schemaVersion": 1,
+  "screenshots": [
+    "https://vanahub-screenshot-upload.hildaware.workers.dev/pending/563749a0-bb36-4e6c-95a9-680910fd2082/a8868dd7651b5ea7fee643af1380adc60b8037db57c3c639fe81cc3c30e3f7ac.png"
+  ],
+  "sourcePath": "addon/vanahub-test-addon"
+}
