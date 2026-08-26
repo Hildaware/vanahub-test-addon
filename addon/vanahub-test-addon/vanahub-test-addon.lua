@@ -1,6 +1,6 @@
 addon.name = 'vanahub-test-addon';
 addon.author = 'Hildaware';
-addon.version = '0.1.6';
+addon.version = '0.1.7';
 addon.desc = 'A minimal addon used to test VanaHub installation.';
 addon.link = 'https://github.com/Hildaware/vanahub-test-addon';
 
