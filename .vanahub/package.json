@@ -1,0 +1,15 @@
+{
+  "author": "Sel",
+  "categories": [
+    "chat-communication"
+  ],
+  "description": "It does stuff",
+  "iconUrl": "https://vanahub-screenshot-upload.hildaware.workers.dev/pending/d3cfcc08-88c0-4add-999e-4635f4e8c7d8.png",
+  "id": "vanahub-test-addon",
+  "name": "Vanahub Test Addon",
+  "schemaVersion": 1,
+  "screenshots": [
+    "https://vanahub-screenshot-upload.hildaware.workers.dev/pending/6ab68f01-fb63-4def-8617-9f341fe7bfdc.png"
+  ],
+  "sourcePath": "addon/vanahub-test-addon"
+}
