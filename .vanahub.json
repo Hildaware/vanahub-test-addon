@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "packages": {
+    "vanahub-test-addon": {
+      "maintainers": [
+        "bferrari352",
+        "hildaware"
+      ]
+    }
+  }
+}
